@@ -119,8 +119,7 @@
           let property = Object.getOwnPropertyDescriptor(current.object, p);
 
           if (property.hasOwnProperty('value') &&
-            ((property.value != null) && (typeof property.value == 'object') || (typeof property.value == 'object')) &&
-            property.value instanceof Object) {
+            (property.value != null && typeof property.value == 'function') || property.value instanceof Object ) {
             queue.push({
               path: current.path.concat([p]),
               object: property.value,
@@ -149,6 +148,7 @@
           }
         }
       }
+
 
       renderGraph();
     }()
