@@ -1,5 +1,9 @@
+
 const net = require('net');
 const parser = require('./parser');
+const Koa = require('koa');
+const app = new Koa();
+
 class Request {
   constructor(options) {
     this.method = options.method || 'GET';
@@ -187,7 +191,7 @@ class TrunkedBodyParser{
         this.current = this.WAITING_LENGTH_LINE_END;
       }else{
         this.length *= 16;
-        this.length += char.charCodeAt(0) - '0'.charCodeAt(0);
+        this.length += parseInt(char, 16);
       }
     }else if(this.current === this.WAITING_LENGTH_LINE_END){
       if(char === '\n'){
@@ -210,8 +214,8 @@ class TrunkedBodyParser{
     }
   }
 }
-
-void async function () {
+ 
+  app.use(async (ctx) => {
   let request = new Request({
     method: 'POST',
     host: '127.0.0.1',
@@ -225,46 +229,30 @@ void async function () {
     }
   })
   let response = await request.send();
-  let dom = parser.parseHTML(response.body);
-  console.log(dom);
-}()
 
-/*  const client = net.createConnection({
-  host: '127.0.0.1',
-  port: 8088
-}, () => {
-  console.log('connected to server!');
+  let dom = parser.parseHTML(response.body);
+  ctx.body = JSON.stringify(dom);
+}) 
+
+app.listen(8099, () => {
+  console.log('Client side is starting at port 8099')
+})  
+
+void async function(){
   let request = new Request({
     method: 'POST',
     host: '127.0.0.1',
     port: "8088",
-    headers: {
-      ["X-FOO2"]: "customed"
+    path: "/",
+    headers:{
+      ["X-Foo"]: "bar"
     },
     body: {
       name: 'cathy'
     }
   })
-  console.log(request)
-   client.write('POST / HTTP/1.1\r\n');
-   client.write('Content-Type: application/x-www-form-urlencoded\r\n');
-   client.write('Content-Length: 10\r\n');
-   client.write('\r\n');
-   client.write('name=cathy');
-   client.write('\r\n');
-})
+  let response = await request.send();
 
+  let dom = parser.parseHTML(response.body);
 
-client.on('data', (data) => {
-  console.log(data.toString())
-  client.end()
-})
-
-client.on('end', () => {
-  console.log('disconnected to server');
-})
-
-client.on('error', (err) => {
-  console.log(err);
-  client.end()
-})  */
+}()

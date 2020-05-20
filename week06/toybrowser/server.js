@@ -3,7 +3,6 @@ const server = http.createServer((req, res)=>{
   console.log('request received');
   console.log(req.headers);
   res.setHeader('Content-Type', 'text/html');
-  res.setHeader('X-Foo', 'bar');
   res.writeHead(200, {'Content-Type': 'text/plain'});
   res.end(
   `<html maaa=a >
@@ -17,12 +16,23 @@ const server = http.createServer((req, res)=>{
       width:30px;
       background-color: #ff1111;
   }
+
+  body .bg.test{
+      height: 200px;
+      color: red;
+  }
+  body .test{
+      background: yellow;
+      color: green;
+  }
       </style>
   </head>
   <body>
-      <div>
-          < img id="myid"/>
-          < img />
+      <div class="test bg">
+          <img id="myid"/>
+          <img />
+      </div>
+      <div class="test">
       </div>
   </body>
   </html>`
