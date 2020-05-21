@@ -237,22 +237,3 @@ class TrunkedBodyParser{
 app.listen(8099, () => {
   console.log('Client side is starting at port 8099')
 })  
-
-void async function(){
-  let request = new Request({
-    method: 'POST',
-    host: '127.0.0.1',
-    port: "8088",
-    path: "/",
-    headers:{
-      ["X-Foo"]: "bar"
-    },
-    body: {
-      name: 'cathy'
-    }
-  })
-  let response = await request.send();
-
-  let dom = parser.parseHTML(response.body);
-
-}()
