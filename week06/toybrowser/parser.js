@@ -178,7 +178,7 @@ function singleQuotedAttributeValue(c){
 
   }else{
     currentAttribute.value += c;
-    return doubleQuotedAttributeValue;
+    return singleQuotedAttributeValue;
   }
 }
 
