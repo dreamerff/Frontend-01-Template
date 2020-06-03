@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body id="body">
+  <div class="container">
+    <div id="list">
+      <span id="a" class="aa"></span>
+      <span class="b cc"></span>
+      <span class="c"></span>
+      <span class="c"></span>
+      <span class="d"></span>
+      <span class="d"></span>
+    </div>
+  </div>
+  <script>
+    function match(element, selector) {
+      var current = {
+        element: element,
+        relation: 'self' // selector与当前element的关系
+      };
+
+      if (!selector || !current.element) {
+        return false;
+      }
+
+      let matched = true;
+
+      var selectorParts = selector.split(' ').reverse(); // 从里往外
+
+      for (let i = 0; i < selectorParts.length; i++) {
+        if (!current.element) {
+          matched = false;
+          break;
+        }
+
+        current.name = '';
+        let j = selectorParts[i].length - 1; // 对当前的selector 倒序读取
+
+        while (j >= 0 && matched) {
+          let char = selectorParts[i].charAt(j);
+          if (char == ".") { // 读到. 则表示已读取的name为class 名
+            current.type = "class";
+            matched = matchSelectorPart(current);
+            if (!matched) break; // 不匹配，则终止
+
+            if (j > 0) { // 后续还有选择器，重置relation
+              current.relation = "self";
+            }
+            current.name = '';
+          } else if (char == "#") { // 读到# 则表示已读取的name为id
+            current.type = "id";
+            matched = matchSelectorPart(current);
+            if (!matched) break;
+            if (j > 0) {
+              current.relation = "self";
+            }
+            current.name = '';
+          } else if (char == ">") {
+            if (current.name != "") { // 既不是id，也不是class，则name为标签名
+              current.type = "tag";
+              matched = matchSelectorPart(current);
+            }
+            current.relation = "siblings"; // 父子
+          } else if (char == "~") {
+            if (current.name != "") { // 既不是id，也不是class，则name为标签名
+              current.type = "tag";
+              matched = matchSelectorPart(current);
+            }
+            current.relation = "nextSiblings"; // 后面的兄弟节点
+          } else if (char == "+") {
+            if (current.name != "") {
+              current.type = "tag";
+              matched = matchSelectorPart(current);
+            }
+            current.relation = "nextSibling"; // 相邻节点
+          } else { // 字母数字或下划线
+            current.name = char + current.name;
+          }
+          if (j == 0 && current.name != "") { // 如果还有未处理的selector，则为标签
+            current.type = "tag";
+            matched = matchSelectorPart(current);
+          }
+          j--;
+        }
+
+        if (!matched) {
+          break;
+        }
+
+        current.element = current.element.parentElement;
+        current.relation = "descendant"; //间隔的选择器，关系为子孙
+      }
+      return matched;
+    }
+
+    function matchSelectorPart(current) {
+      if (current.relation == "siblings") { // 如果是父子关系，则将current element改为父节点进行匹配
+        if (!current.element.parentElement) return false;
+        current.element = current.element.parentElement;
+        return matchSingleSelector(current);
+      } else if (current.relation == "nextSibling") { // 如果是相邻兄弟节点，则将current element改为当前节点前一个节点
+        if (!current.element.parentElement) return false;
+        let childElements = Array.from(current.element.parentElement.children);
+        let matchNextSibling = false;
+        for (let i = 1; i < childElements.length; i++) {
+          if (current.element == childElements[i]) { // 查找当前节点，可能会有多个与当前节点相同的节点，循环判断
+            let temp = {
+              element: childElements[i - 1],
+              type: current.type,
+              name: current.name,
+              relation: current.relation
+            }
+            matchNextSibling = matchSingleSelector(temp);
+            if (matchNextSibling) {
+              current.element = childElements[i - 1];
+              break;
+            }
+          }
+        }
+        return matchNextSibling;
+      } else if (current.relation == 'nextSiblings') {
+        if (!current.element.parentElement) return false;
+        let childElements = Array.from(current.element.parentElement.children);
+        let index = childElements.findIndex(item => item == current.element);
+        if (index <= 0) return false; // 没有兄弟节点
+        var i = 0;
+        let matchNextSiblings = false
+        while (i < index && !matchNextSiblings) { // 前面还有兄弟节点，且未匹配成功，继续循环
+          let temp = {
+            element: childElements[i],
+            type: current.type,
+            name: current.name,
+            relation: current.relation
+          }
+          matchNextSiblings = matchSingleSelector(temp);
+          if (matchNextSiblings) {
+            current.element = childElements[i];
+          }
+          i++;
+        }
+        return matchNextSiblings;
+      } else if (current.relation == 'descendant') {
+        let matchDescendant = false;
+        while (current.element != null && !matchDescendant) {
+          matchDescendant = matchSingleSelector(current);
+          if (!matchDescendant) {
+            current.element = current.element.parentElement; // 当前未找到，继续往上一级父节点查找
+          }
+        }
+        return matchDescendant;
+      } else {
+        return matchSingleSelector(current);
+      }
+    }
+
+    function matchSingleSelector(current) {
+      if (current.type == 'class') {
+        let attr = Array.from(current.element.classList);
+        if (attr.length > 0) {
+          if (attr.indexOf(current.name) >= 0) { // 不包含该class
+            return true;
+          }
+        }
+      } else if (current.type == 'id') {
+        let attr = current.element.id;
+        if (attr && attr === current.name) return true; // 包含该id
+      } else if (current.type == 'tag') {
+        if (current.element.tagName === current.name) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    console.log(match(document.getElementById("a"), ".container #list>#a.aa"));
+    console.log(match(document.getElementsByClassName("b")[0], "#body>.container #list>.b.cc"));
+    console.log(match(document.getElementsByClassName("c")[0], "#body #list>.b+.c"));
+    console.log(match(document.getElementsByClassName("d")[0], ".container #list>.b+.c~.d"));
+  </script>
+</body>
+
+</html>
