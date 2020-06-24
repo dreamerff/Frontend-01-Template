@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traffic Light</title>
+  <style>
+    .traffic-lights {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 350px;
+    }
+
+    span {
+      display: block;
+      width: 100px;
+      height: 100px;
+      border-radius: 50px;
+      background: grey;
+    }
+
+    #green {
+      background: green;
+    }
+  </style>
+  </head》>
+
+<body>
+  <div class="traffic-lights">
+    <span id="green"></span>
+    <span id="yellow"></span>
+    <span id="red"></span>
+  </div>
+  <script>
+    (async function () {
+      while (true) {
+        await changeLight('yellow');
+        await changeLight('red');
+        await changeLight('green');
+      }
+    })()
+
+    
+    function changeLight(color) {
+      let timeIntervalObj = {
+        red: 5000,
+        yellow: 10000,
+        green: 2000
+      };
+      return new Promise((resolve, reject) =>{
+        setTimeout(() => {
+          for (let key in timeIntervalObj) {
+            document.getElementById(key).style.backgroundColor = 'grey';
+          }
+          document.getElementById(color).style.backgroundColor = color;
+          resolve();
+        }, timeIntervalObj[color])
+      })
+    }
+
+    function *switchLight(){
+      yield changeLight('yellow');
+      yield changeLight('red');
+      yield changeLight('green')
+    }
+  </script>
+</body>
+
+</html>
