@@ -27,19 +27,19 @@
   <div id="container"></div>
   <button onclick="localStorage.map = JSON.stringify(map)">save</button>
   <script>
-    class Sorted{
-      constructor(data, compare){
+    class Sorted {
+      constructor(data, compare) {
         this.data = data;
         this.compare = compare;
       }
-      take(){
-        if(!this.data.length){
+      take() {
+        if (!this.data.length) {
           return;
         }
         let min = this.data[0];
         let minIndex = 0;
-        for(let i = 1; i< this.data.length; i++){
-          if(this.compare(this.data[i], min) < 0){
+        for (let i = 1; i < this.data.length; i++) {
+          if (this.compare(this.data[i], min) < 0) {
             min = this.data[i];
             minIndex = i;
           }
@@ -48,13 +48,68 @@
         this.data.pop();
         return min;
       }
-      insert(v){
+      insert(v) {
         this.data.push(v);
       }
-      get length(){
+      get length() {
         return this.data.length;
       }
     }
+
+    class BinaryHeap {
+      constructor(data, compare) {
+        this.data = data;
+        this.compare = compare;
+      }
+      take() {
+        if (!this.data.length) {
+          return;
+        }
+        let min = this.data[0];
+        // fix binary tree
+        let i = 0;
+        while (i < this.data.length) {
+          // 叶子节点, i * 2 + 1, i * 2 + 2
+          if (i * 2 + 1 >= this.data.length) break;
+          if (i * 2 + 2 >= this.data.length) {
+            this.data[i] = this.data[i * 2 + 1];
+            i = i * 2 + 1;
+            break;
+          }
+
+          if (this.compare(this.data[i * 2 + 1], this.data[i * 2 + 2]) < 0) {
+            this.data[i] = this.data[i * 2 + 1];
+            i = i * 2 + 1; // 补
+          } else {
+            this.data[i] = this.data[i * 2 + 2];
+            i = i * 2 + 2;
+          }
+        }
+        if(i<this.data.length -1){
+          this.insertAt(i, this.data.pop())
+        }else{
+          this.data.pop();
+        }
+        return min;
+      }
+      insertAt(i, v) {
+        this.data[i] = v;
+        while(i > 0 && this.compare(v,this.data[Math.floor((i -1)/2)]) < 0){
+          this.data[i] = this.data[Math.floor((i -1)/2)];
+          this.data[Math.floor((i -1)/2)] = v;
+          i = Math.floor((i -1)/2);
+        }
+      }
+      insert(v){
+        this.insertAt(this.data.length, v);
+      }
+      get length() {
+        return this.data.length;
+      }
+    }
+
+
+
 
     var map = localStorage.map ? JSON.parse(localStorage.map) : new Array(10000).fill(0);
     var container = document.getElementById('container');
@@ -88,8 +143,8 @@
     document.addEventListener('mouseup', () => mouse = false);
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    function sleep(t){
-      return new Promise((resolve)=>{
+    function sleep(t) {
+      return new Promise((resolve) => {
         setTimeout(resolve, t);
       })
     }
@@ -97,10 +152,10 @@
     async function findPath(map, start, end) {
       map = map.slice();
 
-      function distance([x, y]){
-        return (x - end[0]) ** 2 + (y - end[1])** 2;
+      function distance([x, y]) {
+        return (x - end[0]) ** 2 + (y - end[1]) ** 2;
       }
-      let collection = new Sorted([start], (a, b)=> distance(a) - distance(b));
+      let collection = new BinaryHeap([start], (a, b) => distance(a) - distance(b));
 
       async function insert([x, y], prev) {
         if (map[100 * y + x] !== 0) return;
@@ -114,9 +169,9 @@
       }
       while (collection.length > 0) {
         let [x, y] = collection.take();
-        if( x === end[0] && y === end[1]) {
+        if (x === end[0] && y === end[1]) {
           let path = [];
-          while(x!== start[0] || y !== start[1]){
+          while (x !== start[0] || y !== start[1]) {
             path.push([x, y]);
             container.children[x * 100 + y].style.backgroundColor = "pink";
             [x, y] = map[y * 100 + x];
