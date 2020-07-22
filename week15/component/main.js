@@ -1,7 +1,8 @@
 
 import { createElement, Text, Wrapper } from "./createElement"
-import {Carousel}  from './carousel.view'
-/* class Carousel {
+/* import {Carousel}  from './carousel.view' */
+import {Timeline, Animation, ColorAnimation}  from "../animation/animation.js";
+ class Carousel {
     constructor(config) {
         this.children = [];
     }
@@ -19,6 +20,8 @@ import {Carousel}  from './carousel.view'
         let root = <div class="carousel">
             {children}
         </div>;
+
+        let linear = t => t;
         let position = 0;
         let nextPic = () => {
             let nextPosition = (position + 1) % this.data.length;
@@ -26,28 +29,19 @@ import {Carousel}  from './carousel.view'
             let current = children[position];
             let next = children[nextPosition];
 
-            current.style.transition = "ease 0s";
-            next.style.transition = "ease 0s";
+            let t1 = new Timeline;
 
-            current.style.transform = `translateX(${- 100 * position}%)`;
-            next.style.transform = `translateX(${100 - 100 * nextPosition}%)`;
+            t1.add(new Animation(current.style, "transform", - 100 * position , -100 - 100 * position, 500, 0, linear, v=>`translateX(${v}%)`))
+            t1.add(new Animation(next.style, "transform", 100 - 100 * nextPosition , - 100 * nextPosition, 500, 0, linear, v=>`translateX(${v}%)`))
+            t1.start();
 
-            setTimeout(function () {
-                current.style.transition = "ease 0.5s";
-                next.style.transition = "ease 0.5s";
+       
 
-                current.style.transform = `translateX(${-100 - 100 * position}%)`;
-                next.style.transform = `translateX(${-100 * nextPosition}%)`;
-
-                position = nextPosition;
-
-            }, 16);
-
+            position = nextPosition;
 
             setTimeout(nextPic, 3000);
         }
-
-
+     
        // setTimeout(nextPic, 3000);
 
         root.addEventListener('mousedown', () => {
@@ -70,9 +64,13 @@ import {Carousel}  from './carousel.view'
               
              
             let move = event => {
-              current.style.transform = `translateX(${event.clientX - startX- 500 * position}px)`;
-              last.style.transform = `translateX(${event.clientX - startX-500 -500 * lastPosition}px)`;
-              next.style.transform = `translateX(${event.clientX - startX + 500 - 500 * nextPosition}px)`;
+              let t1 = new Timeline();
+
+              t1.add(new Animation(current.style, "transform", - 500 * position , event.clientX - startX- 500 * position, 500, 0, linear, v=>`translateX(${v}px)`))
+              t1.add(new Animation(last.style, "transform", -500 -500 * lastPosition , event.clientX - startX-500 -500 * lastPosition, 500, 0, linear, v=>`translateX(${v}px)`))
+              t1.add(new Animation(next.style, "transform", 500 - 500 * nextPosition , event.clientX - startX + 500 - 500 * nextPosition, 500, 0, linear, v=>`translateX(${v}px)`))
+              t1.start();
+
             };
             let up = event => {
               let offset = 0;
@@ -86,9 +84,13 @@ import {Carousel}  from './carousel.view'
               last.style.transition =  "";
               next.style.transition =  "";
   
-              current.style.transform = `translateX(${ offset * 500 - 500 * position}px)`;
-              last.style.transform = `translateX(${offset * 500 -500 -500 * lastPosition}px)`;
-              next.style.transform = `translateX(${offset * 500 + 500 - 500 * nextPosition}px)`;
+
+              let t1 = new Timeline();
+
+              t1.add(new Animation(current.style, "transform",  event.clientX - startX- 500 * position,offset * 500 - 500 * position,500, 0, linear, v=>`translateX(${v}px)`))
+              t1.add(new Animation(last.style, "transform", event.clientX - startX-500 -500 * lastPosition,offset * 500 -500 -500 * lastPosition, 500, 0, linear, v=>`translateX(${v}px)`))
+              t1.add(new Animation(next.style, "transform",  event.clientX - startX + 500 - 500 * nextPosition,offset * 500 + 500 - 500 * nextPosition, 500, 0, linear, v=>`translateX(${v}px)`))
+              t1.start();
            
               position = (position - offset + this.data.length) % this.data.length;
   
@@ -108,7 +110,7 @@ import {Carousel}  from './carousel.view'
             child.mountTo(parent)
         }
     }
-} */
+} 
 
 let component = <Carousel data={[
     "https://static001.geekbang.org/resource/image/bb/21/bb38fb7c1073eaee1755f81131f11d21.jpg",
