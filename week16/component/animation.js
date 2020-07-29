@@ -27,11 +27,9 @@ export class Timeline {
         object[property] = template(value);
       }
 
-      console.log('size', this.animations.size)
       if (true || this.animations.size) {
         this.requestID = requestAnimationFrame(this.tick);
       }else{
-        console.log('ddd')
         this.requestID = null;
       }
     }
