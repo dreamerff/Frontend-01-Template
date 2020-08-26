@@ -1,0 +1,18 @@
+{
+  "name": "publish-tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "publish.js",
+  "scripts": {
+    "start": "node publish.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^5.0.0",
+    "child_process": "^1.0.2"
+  },
+  "devDependencies": {
+    "child-process": "^1.0.2"
+  }
+}
